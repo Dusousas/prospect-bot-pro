@@ -26,56 +26,54 @@ Deno.serve(async (req) => {
       );
     }
 
-    const query = `${category} em ${city}`;
-    
-    let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=pt-BR&key=${GOOGLE_MAPS_API_KEY}`;
-    
+    const textQuery = `${category} em ${city}`;
+
+    // Use Places API (New) - Text Search
+    const searchUrl = "https://places.googleapis.com/v1/places:searchText";
+    const searchBody: any = {
+      textQuery,
+      languageCode: "pt-BR",
+      maxResultCount: 20,
+    };
+
     if (pageToken) {
-      url += `&pagetoken=${pageToken}`;
+      searchBody.pageToken = pageToken;
     }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    const searchRes = await fetch(searchUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.nationalPhoneNumber,places.websiteUri,places.location,nextPageToken",
+      },
+      body: JSON.stringify(searchBody),
+    });
 
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      console.error("Google Maps API error:", data);
-      throw new Error(`Google Maps API error: ${data.status} - ${data.error_message || "Unknown error"}`);
+    const searchData = await searchRes.json();
+
+    if (!searchRes.ok) {
+      console.error("Places API error:", searchData);
+      throw new Error(`Places API error [${searchRes.status}]: ${JSON.stringify(searchData)}`);
     }
 
-    const places = (data.results || []).map((place: any) => ({
-      place_id: place.place_id,
-      name: place.name,
-      address: place.formatted_address,
+    const places = (searchData.places || []).map((place: any) => ({
+      place_id: place.id,
+      name: place.displayName?.text || "",
+      address: place.formattedAddress || "",
       rating: place.rating || 0,
-      total_ratings: place.user_ratings_total || 0,
-      lat: place.geometry?.location?.lat,
-      lng: place.geometry?.location?.lng,
+      total_ratings: place.userRatingCount || 0,
+      phone: place.nationalPhoneNumber || "",
+      website: place.websiteUri || "",
+      lat: place.location?.latitude,
+      lng: place.location?.longitude,
     }));
-
-    // Fetch phone numbers for each place using Place Details
-    const placesWithDetails = await Promise.all(
-      places.map(async (place: any) => {
-        try {
-          const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,website&language=pt-BR&key=${GOOGLE_MAPS_API_KEY}`;
-          const detailsRes = await fetch(detailsUrl);
-          const detailsData = await detailsRes.json();
-          
-          return {
-            ...place,
-            phone: detailsData.result?.formatted_phone_number || "",
-            website: detailsData.result?.website || "",
-          };
-        } catch {
-          return { ...place, phone: "", website: "" };
-        }
-      })
-    );
 
     return new Response(
       JSON.stringify({
-        places: placesWithDetails,
-        nextPageToken: data.next_page_token || null,
-        totalResults: placesWithDetails.length,
+        places,
+        nextPageToken: searchData.nextPageToken || null,
+        totalResults: places.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
