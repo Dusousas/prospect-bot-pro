@@ -30,6 +30,7 @@ export function useLeads() {
         category: d.category || "",
         city: d.city || "",
         website: d.website || "",
+        hasWhatsapp: Boolean(d.phone),
         status: d.status as Lead["status"],
         createdAt: d.created_at,
         notes: d.notes || "",
@@ -42,11 +43,11 @@ export function useLeads() {
     fetchLeads();
   }, [fetchLeads]);
 
-  const searchPlaces = async (category: string, city: string) => {
+  const searchPlaces = async (category: string, city: string, limit?: number) => {
     setIsSearching(true);
     try {
       const { data, error } = await supabase.functions.invoke("search-places", {
-        body: { category, city },
+        body: { category, city, limit },
       });
 
       if (error) throw error;

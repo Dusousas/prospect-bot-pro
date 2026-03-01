@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 interface SearchFormProps {
-  onSearch: (category: string, city: string) => Promise<any>;
+  onSearch: (category: string, city: string, limit?: number) => Promise<any>;
   isSearching: boolean;
 }
 
@@ -16,11 +16,12 @@ const suggestions = [
 export function SearchForm({ onSearch, isSearching }: SearchFormProps) {
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
+  const [limit, setLimit] = useState(20);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (category && city) {
-      onSearch(category, city);
+      onSearch(category, city, limit);
     }
   };
 
@@ -56,6 +57,18 @@ export function SearchForm({ onSearch, isSearching }: SearchFormProps) {
                 className="pl-9"
               />
             </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Quantidade</label>
+            <input
+              type="number"
+              min={1}
+              max={60}
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="w-full rounded-md border border-border px-3 py-2 bg-input text-sm"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Máximo 60 resultados</p>
           </div>
         </div>
 

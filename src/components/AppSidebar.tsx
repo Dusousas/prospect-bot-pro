@@ -14,11 +14,11 @@ export function AppSidebar() {
   return (
     <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-sidebar-primary-foreground">
-          <span className="text-gradient">Prospect</span>
-          <span className="text-sidebar-foreground">Bot</span>
+        <h1 className="text-xl font-bold text-sidebar-primary-foreground tracking-widest">
+          <span className="text-gradient uppercase">Prospect</span>
+          <span className="text-sidebar-foreground uppercase">youon</span>
         </h1>
-        <p className="text-xs text-sidebar-foreground/50 mt-1">Prospecção Inteligente</p>
+
       </div>
 
       <nav className="flex-1 px-3 space-y-1">

@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
       throw new Error("GOOGLE_MAPS_API_KEY is not configured");
     }
 
-    const { category, city, pageToken } = await req.json();
+    const { category, city, pageToken, limit } = await req.json();
 
     if (!category || !city) {
       return new Response(
@@ -30,10 +30,11 @@ Deno.serve(async (req) => {
 
     // Use Places API (New) - Text Search
     const searchUrl = "https://places.googleapis.com/v1/places:searchText";
+    const maxCount = Math.max(1, Math.min(Number(limit) || 20, 60));
     const searchBody: any = {
       textQuery,
       languageCode: "pt-BR",
-      maxResultCount: 20,
+      maxResultCount: maxCount,
     };
 
     if (pageToken) {

@@ -7,8 +7,8 @@ export default function SearchPage() {
   const { leads, isSearching, searchPlaces, updateLeadStatus, deleteLead } = useLeads();
   const newLeads = leads.filter((l) => l.status === "new");
 
-  const handleSearch = async (category: string, city: string) => {
-    const result = await searchPlaces(category, city);
+  const handleSearch = async (category: string, city: string, limit?: number) => {
+    const result = await searchPlaces(category, city, limit);
     if (result.total > 0) {
       toast.success(`${result.total} empresa(s) encontrada(s), ${result.saved} salva(s)!`);
     }
