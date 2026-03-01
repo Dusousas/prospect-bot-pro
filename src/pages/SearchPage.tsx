@@ -8,8 +8,10 @@ export default function SearchPage() {
   const newLeads = leads.filter((l) => l.status === "new");
 
   const handleSearch = async (category: string, city: string) => {
-    const results = await searchPlaces(category, city);
-    toast.success(`${results.length} empresa(s) encontrada(s)!`);
+    const result = await searchPlaces(category, city);
+    if (result.total > 0) {
+      toast.success(`${result.total} empresa(s) encontrada(s), ${result.saved} salva(s)!`);
+    }
   };
 
   return (
@@ -17,7 +19,7 @@ export default function SearchPage() {
       <div>
         <h1 className="text-2xl font-bold">Prospectar</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Encontre novas empresas para prospectar
+          Encontre novas empresas para prospectar via Google Maps
         </p>
       </div>
 
@@ -25,7 +27,7 @@ export default function SearchPage() {
 
       {newLeads.length > 0 && (
         <div>
-          <h2 className="font-semibold mb-3">Resultados ({newLeads.length})</h2>
+          <h2 className="font-semibold mb-3">Leads Novos ({newLeads.length})</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {newLeads.map((lead) => (
               <LeadCard
